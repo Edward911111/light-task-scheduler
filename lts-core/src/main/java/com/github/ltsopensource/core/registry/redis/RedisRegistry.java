@@ -64,8 +64,9 @@ public class RedisRegistry extends FailbackRegistry {
         this.reconnectPeriod = config.getParameter(ExtConfig.REGISTRY_RECONNECT_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD);
 
         String[] addrs = address.split(",");
+        String protocolPrefix = "redis://";
         for (String addr : addrs) {
-            URI uri = URI.create(addr);
+            URI uri = URI.create(protocolPrefix + addr);
             String host = uri.getHost();
             int port = uri.getPort();
             String password = JedisURIHelper.getPassword(uri);
