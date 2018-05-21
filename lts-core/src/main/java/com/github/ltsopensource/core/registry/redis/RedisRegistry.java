@@ -20,7 +20,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.util.JedisURIHelper;
 
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -63,11 +65,12 @@ public class RedisRegistry extends FailbackRegistry {
 
         String[] addrs = address.split(",");
         for (String addr : addrs) {
-            int i = addr.indexOf(':');
-            String host = addr.substring(0, i);
-            int port = Integer.parseInt(addr.substring(i + 1));
-            this.jedisPools.put(addr, new JedisPool(redisConfig, host, port,
-                    Constants.DEFAULT_TIMEOUT));
+            URI uri = URI.create(addr);
+            String host = uri.getHost();
+            int port = uri.getPort();
+            String password = JedisURIHelper.getPassword(uri);
+            int db = JedisURIHelper.getDBIndex(uri);
+            this.jedisPools.put(addr, new JedisPool(redisConfig, host, port, Constants.DEFAULT_TIMEOUT, password, db));
         }
 
         this.expirePeriod = config.getParameter(ExtConfig.REDIS_SESSION_TIMEOUT, Constants.DEFAULT_SESSION_TIMEOUT);
